@@ -609,3 +609,15 @@ async function confirmSubmit() {
         setTimeout(() => errorMsg.remove(), 4000);
     }
 }
+
+// ============================================
+// DEV TOOLS
+// ============================================
+function resetAppForTesting() {
+    if(confirm("Veux-tu vraiment réinitialiser l'application pour faire un nouveau test ?\n(Ceci effacera juste tes données locales pour te permettre de recommencer)")) {
+        localStorage.removeItem('wcpronos_submitted');
+        localStorage.removeItem('wcpronos_name');
+        localStorage.removeItem('wcpronos_progress');
+        window.location.reload();
+    }
+}
