@@ -65,61 +65,6 @@
 
         <!-- Match content -->
         <div class="pronos-content" id="pronos-content"></div>
-
-        <!-- Sticky validate button -->
-        <div class="validate-wrapper" id="validate-wrapper">
-            <button class="validate-btn" id="validate-btn" onclick="handleValidate()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                Valider mes pronos
-            </button>
-            <div id="validate-error" class="error-message"></div>
-        </div>
-    </div>
-
-    <!-- ============================================ -->
-    <!-- SCREEN 3: DONE / CONFIRMATION                -->
-    <!-- ============================================ -->
-    <div id="screen-done" class="screen">
-        <div class="done-container">
-            <div class="done-checkmark">
-                <svg viewBox="0 0 52 52">
-                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                </svg>
-            </div>
-            <h1 class="done-title">Pronos enregistrés !</h1>
-            <p class="done-subtitle" id="done-message">Tes pronostics ont bien été envoyés.</p>
-            <div class="done-card">
-                <div class="done-icon">⏳</div>
-                <p class="done-waiting">En attente des prochains matchs...</p>
-                <p class="done-info">Tu recevras les résultats une fois les matchs joués !</p>
-            </div>
-            <div class="done-footer">
-                ⚽ Coupe du Monde 2026
-                <div style="margin-top: 24px;">
-                    <button onclick="resetAppForTesting()" style="background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 8px 16px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: 0.2s;">
-                        🔄 Recommencer (Mode Test)
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================ -->
-    <!-- CONFIRMATION MODAL                           -->
-    <!-- ============================================ -->
-    <div id="confirm-modal" class="modal-overlay" onclick="closeConfirmModal(event)">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <div class="modal-icon">⚠️</div>
-            <h2 class="modal-title">Valider définitivement ?</h2>
-            <p class="modal-text">Une fois validés, tu ne pourras <strong>plus modifier</strong> tes pronostics. Assure-toi que tout est correct !</p>
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" onclick="closeConfirmModal()">Annuler</button>
-                <button class="modal-btn modal-btn-confirm" id="confirm-submit-btn" onclick="confirmSubmit()">
-                    Valider !
-                </button>
-            </div>
-        </div>
     </div>
 
     <!-- Firebase SDK (compat for vanilla JS) -->

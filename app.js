@@ -340,8 +340,10 @@ function renderMatches() {
             const saved2 = predictions[m.id]?.s2 || '';
             const isFilled = saved1 !== '' && saved2 !== '';
 
+            const validated = predictions[m.id]?.validated === true;
+
             if (isFilled) row.classList.add('filled');
-            if (locked) row.classList.add('locked');
+            if (locked || validated) row.classList.add('locked');
 
             row.innerHTML = `
                 <div class="team team-left">
@@ -351,6 +353,10 @@ function renderMatches() {
                     ? `<div class="locked-badge" title="Match déjà joué">🔒</div>
                        <div class="match-date-locked">${formattedDate}</div>
                        <div class="locked-badge">🔒</div>`
+                    : validated
+                    ? `<div class="locked-badge" style="color:var(--success);">✅</div>
+                       <div class="match-date-locked" style="color:var(--success); font-size:14px; letter-spacing:1px; font-weight:900;">${saved1} - ${saved2}</div>
+                       <div class="locked-badge" style="color:var(--success);">✅</div>`
                     : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
                            class="score-input ${saved1 !== '' ? 'has-value' : ''}"
                            data-match="${m.id}" data-pos="1"
@@ -366,6 +372,12 @@ function renderMatches() {
                 <div class="team team-right">
                     <span class="team-name"><span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-right:4px;">(Gr. ${m.group})</span> ${m.t2}</span>
                 </div>
+                ${locked || validated
+                    ? `<div style="width:32px;"></div>`
+                    : `<button class="match-validate-btn" id="btn-val-${m.id}" onclick="validateSingleMatch(${m.id})" ${isFilled ? '' : 'disabled'}>
+                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                       </button>`
+                }
             `;
 
             matchesDiv.appendChild(row);
@@ -414,45 +426,45 @@ function handleScoreInput(inputEl) {
 
     // Check if both scores are filled for this match
     const row = document.getElementById(`match-${matchId}`);
+    const isFilled = predictions[matchId].s1 !== '' && predictions[matchId].s2 !== '';
     if (row) {
-        const isFilled = predictions[matchId].s1 !== '' && predictions[matchId].s2 !== '';
         row.classList.toggle('filled', isFilled);
     }
+    
+    // Toggle validate button state
+    const btn = document.getElementById(`btn-val-${matchId}`);
+    if (btn) {
+        btn.disabled = !isFilled;
+    }
+
+    // Save to local storage automatically
+    localStorage.setItem('wcpronos_progress', JSON.stringify(predictions));
 
     // Update progress
     updateProgress();
-
-    // Save progress to localStorage
-    saveProgressLocally();
-}
-
-function saveProgressLocally() {
-    localStorage.setItem('wcpronos_progress', JSON.stringify(predictions));
 }
 
 // ============================================
 // PROGRESS TRACKING
 // ============================================
 function updateProgress() {
-    let filled = 0;
+    let validated = 0;
 
     matches.forEach(m => {
-        const locked = isMatchLocked(m);
-        if (locked) return;
-        if (predictions[m.id]?.s1 !== '' && predictions[m.id]?.s2 !== '') {
-            filled++;
+        if (predictions[m.id]?.validated) {
+            validated++;
         }
     });
 
-    // Update progress bar
-    const percent = totalMatches === 0 ? 100 : (filled / totalMatches) * 100;
+    // Update progress bar based on validated matches
+    const percent = totalMatches === 0 ? 100 : (validated / totalMatches) * 100;
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
 
     progressFill.style.width = `${percent}%`;
-    progressText.textContent = `${filled} / ${totalMatches}`;
+    progressText.textContent = `${validated} / ${totalMatches} validés`;
 
-    if (filled === totalMatches && totalMatches > 0) {
+    if (validated === totalMatches && totalMatches > 0) {
         progressFill.classList.add('complete');
         progressText.style.color = 'var(--success)';
     } else {
@@ -462,111 +474,50 @@ function updateProgress() {
 }
 
 // ============================================
-// VALIDATION & SUBMIT
+// SINGLE MATCH VALIDATION
 // ============================================
-function handleValidate() {
-    const errorEl = document.getElementById('validate-error');
-    errorEl.textContent = '';
+async function validateSingleMatch(matchId) {
+    const btn = document.getElementById(`btn-val-${matchId}`);
+    if (!btn || btn.disabled) return;
+    
+    const s1 = predictions[matchId].s1;
+    const s2 = predictions[matchId].s2;
+    if (s1 === '' || s2 === '') return;
 
-    // Count filled matches (only unlocked ones)
-    let filled = 0;
-    const playable = matches.filter(m => !isMatchLocked(m));
-    playable.forEach(m => {
-        if (predictions[m.id]?.s1 !== '' && predictions[m.id]?.s2 !== '') {
-            filled++;
-        }
-    });
+    // Show loading
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.6s linear infinite;"></span>';
 
-    if (filled < totalMatches) {
-        const missing = totalMatches - filled;
-        errorEl.textContent = `Il manque ${missing} match${missing > 1 ? 's' : ''} ! Remplis tous les scores avant de valider.`;
-
-        // Scroll to first empty playable match
-        const firstEmpty = playable.find(m =>
-            predictions[m.id]?.s1 === '' || predictions[m.id]?.s2 === ''
-        );
-        if (firstEmpty) {
-            const row = document.getElementById(`match-${firstEmpty.id}`);
-            if (row) {
-                const headerHeight = document.getElementById('pronos-header').offsetHeight;
-                const top = row.getBoundingClientRect().top + window.scrollY - headerHeight - 20;
-                window.scrollTo({ top, behavior: 'smooth' });
-
-                // Flash the row
-                row.style.background = 'rgba(239, 68, 68, 0.1)';
-                setTimeout(() => { row.style.background = ''; }, 1500);
-            }
-        }
-        return;
-    }
-
-    // All filled — show confirmation modal
-    document.getElementById('confirm-modal').classList.add('show');
-}
-
-function closeConfirmModal(event) {
-    if (event && event.target !== event.currentTarget) return;
-    document.getElementById('confirm-modal').classList.remove('show');
-}
-
-async function confirmSubmit() {
-    const confirmBtn = document.getElementById('confirm-submit-btn');
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<span class="spinner"></span> Envoi...';
+    const match = matches.find(m => m.id === matchId);
 
     try {
-        // Build data for Firebase — human-readable format with team names
-        const matchData = {};
-        matches.forEach(m => {
-            // Get full names for V2 compatibility
-            const t1Full = FULL_NAMES[m.t1] || m.t1;
-            const t2Full = FULL_NAMES[m.t2] || m.t2;
-
-            if (isMatchLocked(m)) {
-                // Don't include locked matches (already played)
-                return;
-            }
-
-            matchData[String(m.id)] = {
-                s1: predictions[m.id].s1,
-                s2: predictions[m.id].s2,
-                equipe1: t1Full,
-                equipe2: t2Full,
-                groupe: m.group,
-                date: m.date,
-                label: `${t1Full} ${predictions[m.id].s1}-${predictions[m.id].s2} ${t2Full}`
-            };
+        // Envoi sur Firebase pour ce match
+        await db.ref(`pronos/${currentPlayer}/matches/${matchId}`).set({
+            equipe1: match.t1,
+            equipe2: match.t2,
+            groupe: match.group,
+            s1: s1,
+            s2: s2,
+            date: match.date,
+            label: `${match.t1} vs ${match.t2} (${s1} - ${s2})`
         });
 
-        await db.ref('pronos/' + currentPlayer).set({
-            submitted: true,
-            timestamp: new Date().toISOString(),
-            joueur: currentPlayer,
-            matches: matchData
-        });
+        // Met à jour la timestamp globale
+        await db.ref(`pronos/${currentPlayer}/timestamp`).set(firebase.database.ServerValue.TIMESTAMP);
 
-        // Success — mark as submitted
-        localStorage.setItem('wcpronos_submitted', 'true');
-        localStorage.removeItem('wcpronos_progress');
+        // Save local state
+        predictions[matchId].validated = true;
+        localStorage.setItem('wcpronos_progress', JSON.stringify(predictions));
 
-        // Close modal and show done screen
-        document.getElementById('confirm-modal').classList.remove('show');
+        // Re-render
+        renderMatches();
+        updateProgress();
 
-        document.getElementById('done-message').textContent =
-            `Les pronos de ${currentPlayer} ont bien été envoyés.`;
-
-        showScreen('screen-done');
     } catch (e) {
-        console.error('Firebase submit error:', e);
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = 'Valider !';
-
-        // Show error in modal
-        const errorMsg = document.createElement('p');
-        errorMsg.style.cssText = 'color: var(--danger); font-size: 13px; margin-top: 12px; font-weight: 500;';
-        errorMsg.textContent = 'Erreur de connexion ! Vérifie ta connexion internet et réessaie.';
-        confirmBtn.parentElement.after(errorMsg);
-        setTimeout(() => errorMsg.remove(), 4000);
+        console.error('Firebase error:', e);
+        alert('Erreur de connexion ! Vérifie ton internet et réessaie.');
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
     }
 }
 
@@ -581,3 +532,5 @@ function resetAppForTesting() {
         window.location.reload();
     }
 }
+
+
