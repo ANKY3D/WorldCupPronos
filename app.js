@@ -116,6 +116,16 @@ function generateMatches() {
             matchId++;
         });
     }
+
+    // Sort chronologically by date, then by original match ID
+    result.sort((a, b) => {
+        const d1 = new Date(a.date);
+        const d2 = new Date(b.date);
+        if (d1 < d2) return -1;
+        if (d1 > d2) return 1;
+        return a.id - b.id;
+    });
+
     return result;
 }
 
@@ -294,45 +304,25 @@ function goBackToName() {
 // ============================================
 function renderMatches() {
     const content = document.getElementById('pronos-content');
-    const groupNav = document.getElementById('group-nav');
     content.innerHTML = '';
-    groupNav.innerHTML = '';
 
-    const groupKeys = Object.keys(GROUPS);
+    const uniqueDates = [...new Set(matches.map(m => m.date))];
 
-    // Build group navigation
-    groupKeys.forEach(g => {
-        const btn = document.createElement('button');
-        btn.className = 'group-nav-btn';
-        btn.id = `nav-${g}`;
-        btn.textContent = g;
-        btn.onclick = () => {
-            const section = document.getElementById(`group-${g}`);
-            if (section) {
-                const headerHeight = document.getElementById('pronos-header').offsetHeight;
-                const top = section.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
-                window.scrollTo({ top, behavior: 'smooth' });
-            }
-        };
-        groupNav.appendChild(btn);
-    });
-
-    // Build match groups
-    groupKeys.forEach((g, groupIdx) => {
-        const groupMatches = matches.filter(m => m.group === g);
+    // Build match groups by date
+    uniqueDates.forEach((dateStr, dateIdx) => {
+        const dateMatches = matches.filter(m => m.date === dateStr);
+        const formattedDate = formatDate(dateStr);
 
         const section = document.createElement('div');
         section.className = 'group-section';
-        section.id = `group-${g}`;
-        section.style.animationDelay = `${groupIdx * 0.05}s`;
+        section.id = `date-${dateStr}`;
+        section.style.animationDelay = `${dateIdx * 0.05}s`;
 
-        // Group header
+        // Date header
         const header = document.createElement('div');
         header.className = 'group-header';
         header.innerHTML = `
-            <div class="group-letter">${g}</div>
-            <div class="group-label">Groupe ${g}</div>
-            <div class="group-status" id="status-${g}">0/6</div>
+            <div class="group-label" style="font-size: 18px; margin-bottom: 4px;">📅 ${formattedDate}</div>
         `;
         section.appendChild(header);
 
@@ -340,7 +330,7 @@ function renderMatches() {
         const matchesDiv = document.createElement('div');
         matchesDiv.className = 'group-matches';
 
-        groupMatches.forEach(m => {
+        dateMatches.forEach(m => {
             const row = document.createElement('div');
             row.className = 'match-row';
             row.id = `match-${m.id}`;
@@ -353,16 +343,13 @@ function renderMatches() {
             if (isFilled) row.classList.add('filled');
             if (locked) row.classList.add('locked');
 
-            const dateLabel = m.date ? formatDate(m.date) : '';
-
             row.innerHTML = `
                 <div class="team team-left">
-                    <span class="team-name">${m.t1}</span>
-                    <span class="team-flag">${TEAMS[m.t1] || ''}</span>
+                    <span class="team-name">${m.t1} <span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-left:4px;">(Gr. ${m.group})</span></span>
                 </div>
                 ${locked
                     ? `<div class="locked-badge" title="Match déjà joué">🔒</div>
-                       <div class="match-date-locked">${dateLabel}</div>
+                       <div class="match-date-locked">${formattedDate}</div>
                        <div class="locked-badge">🔒</div>`
                     : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
                            class="score-input ${saved1 !== '' ? 'has-value' : ''}"
@@ -377,8 +364,7 @@ function renderMatches() {
                            placeholder="–">`
                 }
                 <div class="team team-right">
-                    <span class="team-flag">${TEAMS[m.t2] || ''}</span>
-                    <span class="team-name">${m.t2}</span>
+                    <span class="team-name"><span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-right:4px;">(Gr. ${m.group})</span> ${m.t2}</span>
                 </div>
             `;
 
@@ -449,56 +435,30 @@ function saveProgressLocally() {
 // ============================================
 function updateProgress() {
     let filled = 0;
-    const groupCounts = {};
-
-    // Init group counts
-    Object.keys(GROUPS).forEach(g => {
-        groupCounts[g] = { filled: 0, total: 0, locked: 0 };
-    });
 
     matches.forEach(m => {
         const locked = isMatchLocked(m);
-        if (locked) {
-            groupCounts[m.group].locked++;
-            return; // Don't count locked matches in progress
-        }
-        groupCounts[m.group].total++;
+        if (locked) return;
         if (predictions[m.id]?.s1 !== '' && predictions[m.id]?.s2 !== '') {
             filled++;
-            groupCounts[m.group].filled++;
         }
     });
 
     // Update progress bar
-    const percent = (filled / totalMatches) * 100;
+    const percent = totalMatches === 0 ? 100 : (filled / totalMatches) * 100;
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
 
     progressFill.style.width = `${percent}%`;
     progressText.textContent = `${filled} / ${totalMatches}`;
 
-    if (filled === totalMatches) {
+    if (filled === totalMatches && totalMatches > 0) {
         progressFill.classList.add('complete');
         progressText.style.color = 'var(--success)';
     } else {
         progressFill.classList.remove('complete');
         progressText.style.color = '';
     }
-
-    // Update group nav buttons and status
-    Object.keys(GROUPS).forEach(g => {
-        const navBtn = document.getElementById(`nav-${g}`);
-        const statusEl = document.getElementById(`status-${g}`);
-        const isComplete = groupCounts[g].filled === groupCounts[g].total;
-
-        if (navBtn) {
-            navBtn.classList.toggle('complete', isComplete);
-        }
-        if (statusEl) {
-            statusEl.textContent = `${groupCounts[g].filled}/${groupCounts[g].total}`;
-            statusEl.classList.toggle('complete', isComplete);
-        }
-    });
 }
 
 // ============================================
