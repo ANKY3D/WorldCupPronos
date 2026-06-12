@@ -359,17 +359,17 @@ function renderMatches() {
                     <span class="team-name">${m.t1} <span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-left:4px;">(Gr. ${m.group})</span></span>
                 </div>
                 ${locked
-                    ? `<div class="locked-badge" title="Match déjà joué">🔒</div>
-                       <div class="match-date-locked" style="display:flex; flex-direction:column; justify-content:center;">
+                    ? `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); font-weight:800; font-size:13px; letter-spacing:0.5px;">
+                           <span title="Match déjà joué" style="font-size:14px;">🔒</span>
                            <span>${saved1 !== '' ? `${saved1} - ${saved2}` : 'Terminé'}</span>
-                       </div>
-                       <div class="locked-badge">🔒</div>`
+                           <span style="font-size:14px;">🔒</span>
+                       </div>`
                     : validated
-                    ? `<div class="locked-badge" style="color:var(--success);">✅</div>
-                       <div class="match-date-locked" style="display:flex; flex-direction:column; justify-content:center;">
-                           <span style="color:var(--success); font-size:14px; letter-spacing:1px; font-weight:900;">${saved1} - ${saved2}</span>
-                       </div>
-                       <div class="locked-badge" style="color:var(--success);">✅</div>`
+                    ? `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--success); font-weight:900; font-size:15px; letter-spacing:1px;">
+                           <span style="font-size:14px;">✅</span>
+                           <span>${saved1} - ${saved2}</span>
+                           <span style="font-size:14px;">✅</span>
+                       </div>`
                     : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
                            class="score-input ${saved1 !== '' ? 'has-value' : ''}"
                            data-match="${m.id}" data-pos="1"
