@@ -354,21 +354,20 @@ function renderMatches() {
             if (locked || validated) row.classList.add('locked');
 
             row.innerHTML = `
+                <div class="match-time-side">${matchTime}</div>
                 <div class="team team-left">
                     <span class="team-name">${m.t1} <span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-left:4px;">(Gr. ${m.group})</span></span>
                 </div>
                 ${locked
                     ? `<div class="locked-badge" title="Match déjà joué">🔒</div>
-                       <div class="match-date-locked" style="display:flex; flex-direction:column; gap:2px;">
+                       <div class="match-date-locked" style="display:flex; flex-direction:column; justify-content:center;">
                            <span>${saved1 !== '' ? `${saved1} - ${saved2}` : 'Terminé'}</span>
-                           <span style="font-size:9px; color:var(--text-dim);">${matchTime}</span>
                        </div>
                        <div class="locked-badge">🔒</div>`
                     : validated
                     ? `<div class="locked-badge" style="color:var(--success);">✅</div>
-                       <div class="match-date-locked" style="display:flex; flex-direction:column; gap:2px;">
+                       <div class="match-date-locked" style="display:flex; flex-direction:column; justify-content:center;">
                            <span style="color:var(--success); font-size:14px; letter-spacing:1px; font-weight:900;">${saved1} - ${saved2}</span>
-                           <span style="font-size:9px; color:var(--text-dim);">${matchTime}</span>
                        </div>
                        <div class="locked-badge" style="color:var(--success);">✅</div>`
                     : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
@@ -376,9 +375,8 @@ function renderMatches() {
                            data-match="${m.id}" data-pos="1"
                            value="${saved1}"
                            placeholder="–">
-                       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+                       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
                            <span class="match-dash">-</span>
-                           <span style="font-size:9px; font-weight:600; color:var(--text-dim);">${matchTime}</span>
                        </div>
                        <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
                            class="score-input ${saved2 !== '' ? 'has-value' : ''}"

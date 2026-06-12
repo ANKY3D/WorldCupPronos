@@ -489,11 +489,23 @@ body {
 /* Individual match row */
 .match-row {
     display: grid;
-    grid-template-columns: 1fr 46px 16px 46px 1fr 32px;
+    grid-template-columns: 40px 1fr 46px 16px 46px 1fr 32px;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     padding: 14px 16px;
     transition: background 0.2s ease;
+}
+
+.match-time-side {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-dim);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 0;
+    letter-spacing: 0.5px;
 }
 
 .match-row:not(:last-child) {
@@ -747,11 +759,30 @@ body {
     }
 }
 
+@media (max-width: 480px) {
+    .match-row {
+        grid-template-columns: 36px 1fr 40px 12px 40px 1fr 30px;
+        gap: 4px;
+        padding: 12px 8px;
+    }
+    
+    .match-time-side {
+        font-size: 10px;
+        padding: 3px 0;
+    }
+}
+
 @media (max-width: 380px) {
     .match-row {
-        grid-template-columns: 1fr 38px 16px 38px 1fr;
+        grid-template-columns: 32px 1fr 36px 10px 36px 1fr 28px;
         gap: 2px;
-        padding: 10px 8px;
+        padding: 10px 4px;
+    }
+    
+    .match-time-side {
+        font-size: 9px;
+        padding: 2px 0;
+        letter-spacing: 0;
     }
 
     .score-input {
