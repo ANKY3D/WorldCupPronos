@@ -356,7 +356,7 @@ function renderMatches() {
             row.innerHTML = `
                 <div class="match-time-side">${matchTime}</div>
                 <div class="team team-left">
-                    <span class="team-name">${m.t1} <span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-left:4px;">(Gr. ${m.group})</span></span>
+                    <span class="team-name">${m.t1} <span class="team-group">(Gr. ${m.group})</span></span>
                 </div>
                 ${locked
                     ? `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); font-weight:800; font-size:13px; letter-spacing:0.5px;">
@@ -385,7 +385,7 @@ function renderMatches() {
                            placeholder="–">`
                 }
                 <div class="team team-right">
-                    <span class="team-name"><span style="color:var(--text-dim); font-size:11px; font-weight:600; margin-right:4px;">(Gr. ${m.group})</span> ${m.t2}</span>
+                    <span class="team-name"><span class="team-group">(Gr. ${m.group})</span> ${m.t2}</span>
                 </div>
                 ${locked || validated
                     ? `<div style="width:32px;"></div>`

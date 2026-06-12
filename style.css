@@ -548,6 +548,13 @@ body {
     letter-spacing: -0.2px;
 }
 
+.team-group {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0 4px;
+}
+
 .team-left .team-name {
     text-align: right;
 }
@@ -725,6 +732,10 @@ body {
 
     .team-name {
         font-size: 11px;
+    }
+
+    .team-group {
+        display: none;
     }
 
     .pronos-content {
