@@ -760,6 +760,14 @@ body {
 }
 
 @media (max-width: 480px) {
+    .name-input-wrapper {
+        flex-direction: column;
+    }
+    .name-input-wrapper button {
+        justify-content: center;
+        width: 100%;
+    }
+
     .match-row {
         grid-template-columns: 36px 1fr 40px 12px 40px 1fr 30px;
         gap: 4px;
