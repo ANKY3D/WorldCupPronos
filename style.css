@@ -730,6 +730,14 @@ body {
         font-size: 16px;
     }
 
+    .team-left {
+        padding-right: 8px;
+    }
+
+    .team-right {
+        padding-left: 8px;
+    }
+
     .team-name {
         font-size: 11px;
     }
