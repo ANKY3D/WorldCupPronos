@@ -70,18 +70,18 @@ const MATCH_PATTERN = [[0, 1], [2, 3], [0, 2], [3, 1], [3, 0], [1, 2]];
 // Each group has exactly 6 matches. The dates are mapped to MATCH_PATTERN.
 // ============================================
 const MATCH_DATES = {
-    "A": ["2026-06-11", "2026-06-12", "2026-06-19", "2026-06-18", "2026-06-25", "2026-06-25"],
-    "B": ["2026-06-12", "2026-06-13", "2026-06-19", "2026-06-18", "2026-06-24", "2026-06-24"],
-    "C": ["2026-06-14", "2026-06-14", "2026-06-20", "2026-06-20", "2026-06-25", "2026-06-25"],
-    "D": ["2026-06-13", "2026-06-14", "2026-06-19", "2026-06-20", "2026-06-26", "2026-06-26"],
-    "E": ["2026-06-14", "2026-06-15", "2026-06-20", "2026-06-21", "2026-06-25", "2026-06-25"],
-    "F": ["2026-06-14", "2026-06-15", "2026-06-20", "2026-06-21", "2026-06-26", "2026-06-26"],
-    "G": ["2026-06-15", "2026-06-16", "2026-06-21", "2026-06-22", "2026-06-27", "2026-06-27"],
-    "H": ["2026-06-15", "2026-06-16", "2026-06-21", "2026-06-22", "2026-06-27", "2026-06-27"],
-    "I": ["2026-06-16", "2026-06-17", "2026-06-22", "2026-06-23", "2026-06-26", "2026-06-26"],
-    "J": ["2026-06-17", "2026-06-17", "2026-06-22", "2026-06-23", "2026-06-28", "2026-06-28"],
-    "K": ["2026-06-17", "2026-06-18", "2026-06-23", "2026-06-24", "2026-06-28", "2026-06-28"],
-    "L": ["2026-06-17", "2026-06-18", "2026-06-23", "2026-06-24", "2026-06-27", "2026-06-27"]
+    "A": ["2026-06-11T21:00", "2026-06-12T04:00", "2026-06-19T03:00", "2026-06-18T18:00", "2026-06-25T03:00", "2026-06-25T03:00"],
+    "B": ["2026-06-12T21:00", "2026-06-13T21:00", "2026-06-19T00:00", "2026-06-18T21:00", "2026-06-24T21:00", "2026-06-24T21:00"],
+    "C": ["2026-06-14T00:00", "2026-06-14T03:00", "2026-06-20T02:30", "2026-06-20T00:00", "2026-06-25T00:00", "2026-06-25T00:00"],
+    "D": ["2026-06-13T03:00", "2026-06-14T06:00", "2026-06-19T21:00", "2026-06-20T05:00", "2026-06-26T04:00", "2026-06-26T04:00"],
+    "E": ["2026-06-14T19:00", "2026-06-15T01:00", "2026-06-20T22:00", "2026-06-21T02:00", "2026-06-25T22:00", "2026-06-25T22:00"],
+    "F": ["2026-06-14T22:00", "2026-06-15T04:00", "2026-06-20T19:00", "2026-06-21T06:00", "2026-06-26T01:00", "2026-06-26T01:00"],
+    "G": ["2026-06-15T21:00", "2026-06-16T03:00", "2026-06-21T21:00", "2026-06-22T03:00", "2026-06-27T05:00", "2026-06-27T05:00"],
+    "H": ["2026-06-15T18:00", "2026-06-16T00:00", "2026-06-21T18:00", "2026-06-22T00:00", "2026-06-27T02:00", "2026-06-27T02:00"],
+    "I": ["2026-06-16T21:00", "2026-06-17T00:00", "2026-06-22T23:00", "2026-06-23T02:00", "2026-06-26T21:00", "2026-06-26T21:00"],
+    "J": ["2026-06-17T03:00", "2026-06-17T06:00", "2026-06-22T19:00", "2026-06-23T05:00", "2026-06-28T04:00", "2026-06-28T04:00"],
+    "K": ["2026-06-17T19:00", "2026-06-18T04:00", "2026-06-23T19:00", "2026-06-24T04:00", "2026-06-28T01:30", "2026-06-28T01:30"],
+    "L": ["2026-06-17T22:00", "2026-06-18T01:00", "2026-06-23T22:00", "2026-06-24T01:00", "2026-06-27T23:00", "2026-06-27T23:00"]
 };
 
 // ============================================
@@ -130,14 +130,14 @@ function generateMatches() {
 
 /**
  * Check if a match is locked (already played or started).
- * A match is locked if its date is before today.
+ * A match is locked if the exact current time has passed the match start time.
  */
 function isMatchLocked(match) {
     if (!match.date) return false;
-    const matchDate = new Date(match.date + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return matchDate < today;
+    // The dates are stored as "2026-06-11T21:00". Append +02:00 to force parsing as Paris/European Summer Time.
+    const matchDate = new Date(match.date + ':00+02:00');
+    const now = new Date();
+    return matchDate <= now;
 }
 
 /** Format date for display: "11 juin" */
@@ -146,6 +146,12 @@ function formatDate(dateStr) {
                     'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
     const d = new Date(dateStr + 'T12:00:00');
     return `${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+/** Format time for display: "21h00" */
+function formatTime(isoStr) {
+    const timePart = isoStr.split('T')[1]; // "21:00"
+    return timePart.replace(':', 'h');
 }
 
 // ============================================
@@ -305,16 +311,17 @@ function renderMatches() {
     const content = document.getElementById('pronos-content');
     content.innerHTML = '';
 
-    const uniqueDates = [...new Set(matches.map(m => m.date))];
+    // Extract unique days (ignoring the exact hour for grouping)
+    const uniqueDays = [...new Set(matches.map(m => m.date.split('T')[0]))];
 
-    // Build match groups by date
-    uniqueDates.forEach((dateStr, dateIdx) => {
-        const dateMatches = matches.filter(m => m.date === dateStr);
-        const formattedDate = formatDate(dateStr);
+    // Build match groups by day
+    uniqueDays.forEach((dayStr, dateIdx) => {
+        const dateMatches = matches.filter(m => m.date.startsWith(dayStr));
+        const formattedDate = formatDate(dayStr);
 
         const section = document.createElement('div');
         section.className = 'group-section';
-        section.id = `date-${dateStr}`;
+        section.id = `date-${dayStr}`;
         section.style.animationDelay = `${dateIdx * 0.05}s`;
 
         // Date header
@@ -338,6 +345,8 @@ function renderMatches() {
             const saved1 = predictions[m.id]?.s1 || '';
             const saved2 = predictions[m.id]?.s2 || '';
             const isFilled = saved1 !== '' && saved2 !== '';
+            
+            const matchTime = formatTime(m.date);
 
             const validated = predictions[m.id]?.validated === true;
 
@@ -350,18 +359,27 @@ function renderMatches() {
                 </div>
                 ${locked
                     ? `<div class="locked-badge" title="Match déjà joué">🔒</div>
-                       <div class="match-date-locked">${formattedDate}</div>
+                       <div class="match-date-locked" style="display:flex; flex-direction:column; gap:2px;">
+                           <span>${saved1 !== '' ? `${saved1} - ${saved2}` : 'Terminé'}</span>
+                           <span style="font-size:9px; color:var(--text-dim);">${matchTime}</span>
+                       </div>
                        <div class="locked-badge">🔒</div>`
                     : validated
                     ? `<div class="locked-badge" style="color:var(--success);">✅</div>
-                       <div class="match-date-locked" style="color:var(--success); font-size:14px; letter-spacing:1px; font-weight:900;">${saved1} - ${saved2}</div>
+                       <div class="match-date-locked" style="display:flex; flex-direction:column; gap:2px;">
+                           <span style="color:var(--success); font-size:14px; letter-spacing:1px; font-weight:900;">${saved1} - ${saved2}</span>
+                           <span style="font-size:9px; color:var(--text-dim);">${matchTime}</span>
+                       </div>
                        <div class="locked-badge" style="color:var(--success);">✅</div>`
                     : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
                            class="score-input ${saved1 !== '' ? 'has-value' : ''}"
                            data-match="${m.id}" data-pos="1"
                            value="${saved1}"
                            placeholder="–">
-                       <span class="match-dash">-</span>
+                       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;">
+                           <span class="match-dash">-</span>
+                           <span style="font-size:9px; font-weight:600; color:var(--text-dim);">${matchTime}</span>
+                       </div>
                        <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
                            class="score-input ${saved2 !== '' ? 'has-value' : ''}"
                            data-match="${m.id}" data-pos="2"
