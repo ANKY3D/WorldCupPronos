@@ -59,7 +59,33 @@ const GROUPS = {
 };
 
 // Match pattern: indices within each group (same as V2)
+// Pattern: [team_idx_1, team_idx_2] → matchday within group
+// Matchday 1: (0,1), (2,3)
+// Matchday 2: (0,2), (3,1)
+// Matchday 3: (3,0), (1,2)
 const MATCH_PATTERN = [[0, 1], [2, 3], [0, 2], [3, 1], [3, 0], [1, 2]];
+
+// ============================================
+// MATCH DATES — Real FIFA World Cup 2026 schedule
+// Format: { "GROUP": ["date_matchday1", "date_matchday2", "date_matchday3"] }
+// Each matchday has 2 matches per group.
+// Dates are in YYYY-MM-DD format (Paris timezone, the matches happen
+// during daytime US time = evening/night in Europe, so we use the US date).
+// ============================================
+const MATCH_DATES = {
+    "A": ["2026-06-11", "2026-06-18", "2026-06-25"],
+    "B": ["2026-06-12", "2026-06-18", "2026-06-24"],
+    "C": ["2026-06-13", "2026-06-19", "2026-06-25"],
+    "D": ["2026-06-12", "2026-06-19", "2026-06-26"],
+    "E": ["2026-06-14", "2026-06-20", "2026-06-25"],
+    "F": ["2026-06-14", "2026-06-20", "2026-06-26"],
+    "G": ["2026-06-15", "2026-06-21", "2026-06-27"],
+    "H": ["2026-06-15", "2026-06-21", "2026-06-27"],
+    "I": ["2026-06-16", "2026-06-22", "2026-06-26"],
+    "J": ["2026-06-17", "2026-06-22", "2026-06-27"],
+    "K": ["2026-06-17", "2026-06-23", "2026-06-27"],
+    "L": ["2026-06-17", "2026-06-23", "2026-06-27"]
+};
 
 // ============================================
 // APP STATE
@@ -67,7 +93,7 @@ const MATCH_PATTERN = [[0, 1], [2, 3], [0, 2], [3, 1], [3, 0], [1, 2]];
 let currentPlayer = '';
 let predictions = {};   // { matchId: { s1: '', s2: '' } }
 let matches = [];       // Generated match list
-let totalMatches = 0;
+let totalMatches = 0;   // Only counts playable (unlocked) matches
 
 // ============================================
 // GENERATE MATCHES
@@ -76,17 +102,41 @@ function generateMatches() {
     const result = [];
     let matchId = 1;
     for (const [group, teams] of Object.entries(GROUPS)) {
-        for (const [idx1, idx2] of MATCH_PATTERN) {
+        MATCH_PATTERN.forEach(([idx1, idx2], patternIdx) => {
+            // patternIdx 0,1 = matchday 1 | 2,3 = matchday 2 | 4,5 = matchday 3
+            const matchday = Math.floor(patternIdx / 2); // 0, 0, 1, 1, 2, 2
+            const date = MATCH_DATES[group][matchday];
             result.push({
                 id: matchId,
                 group: group,
                 t1: teams[idx1],
-                t2: teams[idx2]
+                t2: teams[idx2],
+                date: date
             });
             matchId++;
-        }
+        });
     }
     return result;
+}
+
+/**
+ * Check if a match is locked (already played or started).
+ * A match is locked if its date is before today.
+ */
+function isMatchLocked(match) {
+    if (!match.date) return false;
+    const matchDate = new Date(match.date + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return matchDate < today;
+}
+
+/** Format date for display: "11 juin" */
+function formatDate(dateStr) {
+    const months = ['jan.', 'fév.', 'mars', 'avr.', 'mai', 'juin',
+                    'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+    const d = new Date(dateStr + 'T12:00:00');
+    return `${d.getDate()} ${months[d.getMonth()]}`;
 }
 
 // ============================================
@@ -105,11 +155,16 @@ function showScreen(screenId) {
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
     matches = generateMatches();
-    totalMatches = matches.length;
 
-    // Initialize empty predictions
+    // Count only playable (unlocked) matches
+    const playableMatches = matches.filter(m => !isMatchLocked(m));
+    totalMatches = playableMatches.length;
+
+    // Initialize empty predictions for playable matches only
     matches.forEach(m => {
-        predictions[m.id] = { s1: '', s2: '' };
+        if (!isMatchLocked(m)) {
+            predictions[m.id] = { s1: '', s2: '' };
+        }
     });
 
     // Check if already submitted
@@ -290,28 +345,37 @@ function renderMatches() {
             row.className = 'match-row';
             row.id = `match-${m.id}`;
 
+            const locked = isMatchLocked(m);
             const saved1 = predictions[m.id]?.s1 || '';
             const saved2 = predictions[m.id]?.s2 || '';
             const isFilled = saved1 !== '' && saved2 !== '';
 
             if (isFilled) row.classList.add('filled');
+            if (locked) row.classList.add('locked');
+
+            const dateLabel = m.date ? formatDate(m.date) : '';
 
             row.innerHTML = `
                 <div class="team team-left">
                     <span class="team-name">${m.t1}</span>
                     <span class="team-flag">${TEAMS[m.t1] || ''}</span>
                 </div>
-                <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
-                       class="score-input ${saved1 !== '' ? 'has-value' : ''}"
-                       data-match="${m.id}" data-pos="1"
-                       value="${saved1}"
-                       placeholder="–">
-                <span class="match-dash">-</span>
-                <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
-                       class="score-input ${saved2 !== '' ? 'has-value' : ''}"
-                       data-match="${m.id}" data-pos="2"
-                       value="${saved2}"
-                       placeholder="–">
+                ${locked
+                    ? `<div class="locked-badge" title="Match déjà joué">🔒</div>
+                       <div class="match-date-locked">${dateLabel}</div>
+                       <div class="locked-badge">🔒</div>`
+                    : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
+                           class="score-input ${saved1 !== '' ? 'has-value' : ''}"
+                           data-match="${m.id}" data-pos="1"
+                           value="${saved1}"
+                           placeholder="–">
+                       <span class="match-dash">-</span>
+                       <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
+                           class="score-input ${saved2 !== '' ? 'has-value' : ''}"
+                           data-match="${m.id}" data-pos="2"
+                           value="${saved2}"
+                           placeholder="–">`
+                }
                 <div class="team team-right">
                     <span class="team-flag">${TEAMS[m.t2] || ''}</span>
                     <span class="team-name">${m.t2}</span>
@@ -389,10 +453,15 @@ function updateProgress() {
 
     // Init group counts
     Object.keys(GROUPS).forEach(g => {
-        groupCounts[g] = { filled: 0, total: 0 };
+        groupCounts[g] = { filled: 0, total: 0, locked: 0 };
     });
 
     matches.forEach(m => {
+        const locked = isMatchLocked(m);
+        if (locked) {
+            groupCounts[m.group].locked++;
+            return; // Don't count locked matches in progress
+        }
         groupCounts[m.group].total++;
         if (predictions[m.id]?.s1 !== '' && predictions[m.id]?.s2 !== '') {
             filled++;
@@ -439,9 +508,10 @@ function handleValidate() {
     const errorEl = document.getElementById('validate-error');
     errorEl.textContent = '';
 
-    // Count filled matches
+    // Count filled matches (only unlocked ones)
     let filled = 0;
-    matches.forEach(m => {
+    const playable = matches.filter(m => !isMatchLocked(m));
+    playable.forEach(m => {
         if (predictions[m.id]?.s1 !== '' && predictions[m.id]?.s2 !== '') {
             filled++;
         }
@@ -451,8 +521,8 @@ function handleValidate() {
         const missing = totalMatches - filled;
         errorEl.textContent = `Il manque ${missing} match${missing > 1 ? 's' : ''} ! Remplis tous les scores avant de valider.`;
 
-        // Scroll to first empty match
-        const firstEmpty = matches.find(m =>
+        // Scroll to first empty playable match
+        const firstEmpty = playable.find(m =>
             predictions[m.id]?.s1 === '' || predictions[m.id]?.s2 === ''
         );
         if (firstEmpty) {
@@ -485,18 +555,33 @@ async function confirmSubmit() {
     confirmBtn.innerHTML = '<span class="spinner"></span> Envoi...';
 
     try {
-        // Build data for Firebase — use full names for V2 compatibility
+        // Build data for Firebase — human-readable format with team names
         const matchData = {};
         matches.forEach(m => {
+            // Get full names for V2 compatibility
+            const t1Full = FULL_NAMES[m.t1] || m.t1;
+            const t2Full = FULL_NAMES[m.t2] || m.t2;
+
+            if (isMatchLocked(m)) {
+                // Don't include locked matches (already played)
+                return;
+            }
+
             matchData[String(m.id)] = {
                 s1: predictions[m.id].s1,
-                s2: predictions[m.id].s2
+                s2: predictions[m.id].s2,
+                equipe1: t1Full,
+                equipe2: t2Full,
+                groupe: m.group,
+                date: m.date,
+                label: `${t1Full} ${predictions[m.id].s1}-${predictions[m.id].s2} ${t2Full}`
             };
         });
 
         await db.ref('pronos/' + currentPlayer).set({
             submitted: true,
             timestamp: new Date().toISOString(),
+            joueur: currentPlayer,
             matches: matchData
         });
 
