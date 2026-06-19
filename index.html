@@ -14,11 +14,17 @@
     <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
 
     <!-- ============================================ -->
     <!-- SCREEN 1: NAME ENTRY                         -->
     <!-- ============================================ -->
     <div id="screen-name" class="screen active">
+        <button class="theme-toggle welcome-theme-toggle" onclick="toggleTheme()" aria-label="Changer de thème"></button>
         <div class="welcome-container">
             <div class="welcome-badge">⚽ Coupe du Monde 2026</div>
             <h1 class="welcome-title">Pronos<br><span class="gradient-text">CDM 2026</span></h1>
@@ -53,6 +59,7 @@
                 <div class="pronos-title">
                     <span id="player-greeting"></span>
                 </div>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Changer de thème"></button>
             </div>
             <!-- Progress bar -->
             <div class="progress-wrapper">

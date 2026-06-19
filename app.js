@@ -169,6 +169,7 @@ function showScreen(screenId) {
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
+    updateThemeToggleIcons();
     matches = generateMatches();
 
     // Count only playable (unlocked) matches
@@ -351,10 +352,14 @@ function renderMatches() {
             const validated = predictions[m.id]?.validated === true;
 
             if (isFilled) row.classList.add('filled');
-            if (locked || validated) row.classList.add('locked');
+            if (locked) row.classList.add('locked');
+            if (validated) row.classList.add('validated');
 
             row.innerHTML = `
-                <div class="match-time-side">${matchTime}</div>
+                <div class="match-time-side" style="display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.2; padding:4px 2px;">
+                    <span style="font-size: 9px; opacity: 0.7; font-weight: 600;">N°${m.id}</span>
+                    <span style="font-size: 11px; font-weight: 800; margin-top: 1px;">${matchTime}</span>
+                </div>
                 <div class="team team-left">
                     <span class="team-name">${m.t1} <span class="team-group">(Gr. ${m.group})</span></span>
                 </div>
@@ -534,4 +539,23 @@ async function validateSingleMatch(matchId) {
         btn.disabled = false;
         btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
     }
+}
+
+// ============================================
+// THEME MANAGEMENT (LIGHT/DARK)
+// ============================================
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateThemeToggleIcons();
+}
+
+function updateThemeToggleIcons() {
+    const isLight = document.body.classList.contains('light-mode');
+    const sunIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+    const moonIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`;
+    
+    document.querySelectorAll('.theme-toggle').forEach(btn => {
+        btn.innerHTML = isLight ? moonIcon : sunIcon;
+    });
 }

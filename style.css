@@ -32,6 +32,63 @@
     --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.light-mode {
+    --bg-dark: #f3f4f6;
+    --bg-surface: #ffffff;
+    --card-bg: #ffffff;
+    --card-bg-hover: #f9fafb;
+    --text-main: #111827;
+    --text-muted: #4b5563;
+    --text-dim: #9ca3af;
+    --accent: #2563eb;
+    --accent-soft: rgba(37, 99, 235, 0.08);
+    --accent-glow: rgba(37, 99, 235, 0.15);
+    --border: #e5e7eb;
+    --border-hover: #d1d5db;
+    --danger: #dc2626;
+    --danger-soft: rgba(220, 38, 38, 0.08);
+    --success: #16a34a;
+    --success-soft: rgba(22, 163, 74, 0.08);
+    --gold: #d97706;
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-glow: 0 0 20px var(--accent-glow);
+}
+
+.theme-toggle {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.welcome-theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+body.light-mode .match-time-side {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-mode .match-row.locked {
+    background: rgba(0, 0, 0, 0.01);
+}
+
 /* =============================================
    RESET & BASE
 ============================================= */
@@ -565,7 +622,7 @@ body {
     height: 44px;
     background: var(--bg-dark);
     border: 1.5px solid var(--border);
-    color: white;
+    color: var(--text-main);
     font-family: 'Inter', sans-serif;
     font-weight: 800;
     font-size: 18px;
@@ -607,7 +664,7 @@ body {
 
 /* Locked match (already played) */
 .match-row.locked {
-    opacity: 0.4;
+    opacity: 0.55;
     background: rgba(255, 255, 255, 0.02);
     pointer-events: none;
 }
@@ -615,6 +672,29 @@ body {
 .match-row.locked .team-name {
     text-decoration: line-through;
     text-decoration-color: var(--text-dim);
+}
+
+/* Validated matches (saved predictions before match starts) */
+.match-row.validated {
+    pointer-events: none;
+    background: rgba(34, 197, 94, 0.06);
+    border-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+.match-row.validated .team-name {
+    font-weight: 700;
+    color: var(--text-main);
+    text-decoration: none !important;
+}
+
+/* Validated matches that are now locked (match has started) */
+.match-row.validated.locked {
+    opacity: 0.75;
+    background: rgba(34, 197, 94, 0.03);
+}
+
+.match-row.validated.locked .team-name {
+    text-decoration: none !important;
 }
 
 .locked-badge {
