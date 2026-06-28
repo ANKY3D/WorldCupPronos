@@ -235,7 +235,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedName && savedProgress) {
         try {
             currentPlayer = savedName;
-            predictions = JSON.parse(savedProgress);
+            const parsedProgress = JSON.parse(savedProgress);
+            Object.assign(predictions, parsedProgress);
+            
             document.getElementById('player-greeting').innerHTML = `⚽ <span>${currentPlayer}</span>`;
             renderMatches();
             updateProgress();
