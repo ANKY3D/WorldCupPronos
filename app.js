@@ -98,9 +98,9 @@ const KNOCKOUT_MATCHES = [
     { id: 80, phase: "16èmes", t1: "Angleterre", t2: "RD Congo", date: "2026-07-01T18:00" },
     { id: 81, phase: "16èmes", t1: "Belgique", t2: "Sénégal", date: "2026-07-01T22:00" },
     { id: 82, phase: "16èmes", t1: "Etats-Unis", t2: "Bosnie-Herz.", date: "2026-07-02T02:00" },
-    { id: 83, phase: "16èmes", t1: "Espagne", t2: "À définir", date: "2026-07-02T21:00" },
+    { id: 83, phase: "16èmes", t1: "Espagne", t2: "Autriche", date: "2026-07-02T21:00" },
     { id: 84, phase: "16èmes", t1: "Portugal", t2: "Croatie", date: "2026-07-03T01:00" },
-    { id: 85, phase: "16èmes", t1: "Suisse", t2: "À définir", date: "2026-07-03T05:00" },
+    { id: 85, phase: "16èmes", t1: "Suisse", t2: "Algérie", date: "2026-07-03T05:00" },
     { id: 86, phase: "16èmes", t1: "Australie", t2: "Egypte", date: "2026-07-03T20:00" },
     { id: 87, phase: "16èmes", t1: "Argentine", t2: "Cap-Vert", date: "2026-07-04T00:00" },
     { id: 88, phase: "16èmes", t1: "Colombie", t2: "Ghana", date: "2026-07-04T03:30" }
