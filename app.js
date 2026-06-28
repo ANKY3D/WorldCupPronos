@@ -85,6 +85,28 @@ const MATCH_DATES = {
 };
 
 // ============================================
+// KNOCKOUT MATCHES
+// ============================================
+const KNOCKOUT_MATCHES = [
+    { id: 73, phase: "16èmes", t1: "Afrique du Sud", t2: "Canada", date: "2026-06-28T21:00" },
+    { id: 74, phase: "16èmes", t1: "Brésil", t2: "Japon", date: "2026-06-29T19:00" },
+    { id: 75, phase: "16èmes", t1: "Allemagne", t2: "Paraguay", date: "2026-06-29T22:30" },
+    { id: 76, phase: "16èmes", t1: "Pays-Bas", t2: "Maroc", date: "2026-06-30T03:00" },
+    { id: 77, phase: "16èmes", t1: "Côte d'Ivoire", t2: "Norvège", date: "2026-06-30T19:00" },
+    { id: 78, phase: "16èmes", t1: "France", t2: "Suède", date: "2026-06-30T23:00" },
+    { id: 79, phase: "16èmes", t1: "Mexique", t2: "Equateur", date: "2026-07-01T03:00" },
+    { id: 80, phase: "16èmes", t1: "Angleterre", t2: "RD Congo", date: "2026-07-01T18:00" },
+    { id: 81, phase: "16èmes", t1: "Belgique", t2: "Sénégal", date: "2026-07-01T22:00" },
+    { id: 82, phase: "16èmes", t1: "Etats-Unis", t2: "Bosnie-Herz.", date: "2026-07-02T02:00" },
+    { id: 83, phase: "16èmes", t1: "Espagne", t2: "À définir", date: "2026-07-02T21:00" },
+    { id: 84, phase: "16èmes", t1: "Portugal", t2: "Croatie", date: "2026-07-03T01:00" },
+    { id: 85, phase: "16èmes", t1: "Suisse", t2: "À définir", date: "2026-07-03T05:00" },
+    { id: 86, phase: "16èmes", t1: "Australie", t2: "Egypte", date: "2026-07-03T20:00" },
+    { id: 87, phase: "16èmes", t1: "Argentine", t2: "Cap-Vert", date: "2026-07-04T00:00" },
+    { id: 88, phase: "16èmes", t1: "Colombie", t2: "Ghana", date: "2026-07-04T03:30" }
+];
+
+// ============================================
 // APP STATE
 // ============================================
 let currentPlayer = '';
@@ -107,6 +129,7 @@ function generateMatches() {
 
             result.push({
                 id: matchId,
+                phase: 'Poules',
                 group: groupId,
                 t1: groupTeams[pattern[0]],
                 t2: groupTeams[pattern[1]],
@@ -116,13 +139,25 @@ function generateMatches() {
         });
     }
 
-    // Sort chronologically by date, then by original match ID
+    // Sort group matches chronologically by date, then by original match ID
     result.sort((a, b) => {
         const d1 = new Date(a.date);
         const d2 = new Date(b.date);
         if (d1 < d2) return -1;
         if (d1 > d2) return 1;
         return a.id - b.id;
+    });
+
+    // Append Knockout Matches
+    KNOCKOUT_MATCHES.forEach(km => {
+        result.push({
+            id: km.id,
+            phase: km.phase,
+            group: km.phase, // Fallback for V2 grouping/display if needed
+            t1: km.t1,
+            t2: km.t2,
+            date: km.date
+        });
     });
 
     return result;
@@ -312,99 +347,134 @@ function renderMatches() {
     const content = document.getElementById('pronos-content');
     content.innerHTML = '';
 
-    // Extract unique days (ignoring the exact hour for grouping)
-    const uniqueDays = [...new Set(matches.map(m => m.date.split('T')[0]))];
+    // Group matches by phase first
+    const uniquePhases = [...new Set(matches.map(m => m.phase))];
 
-    // Build match groups by day
-    uniqueDays.forEach((dayStr, dateIdx) => {
-        const dateMatches = matches.filter(m => m.date.startsWith(dayStr));
-        const formattedDate = formatDate(dayStr);
+    uniquePhases.forEach(phase => {
+        const phaseMatches = matches.filter(m => m.phase === phase);
+        
+        // Create Phase Container
+        const phaseSection = document.createElement('div');
+        phaseSection.className = 'phase-section';
+        // Generate an ID based on phase name for navigation (e.g., "phase-poules", "phase-16emes")
+        const phaseIdText = phase.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+        phaseSection.id = `phase-${phaseIdText}`;
+        
+        // Phase Header
+        const phaseHeader = document.createElement('h2');
+        phaseHeader.className = 'phase-divider';
+        phaseHeader.innerHTML = phase === 'Poules' ? '🏆 Phase de Groupes' : `🏆 ${phase}`;
+        phaseSection.appendChild(phaseHeader);
 
-        const section = document.createElement('div');
-        section.className = 'group-section';
-        section.id = `date-${dayStr}`;
-        section.style.animationDelay = `${dateIdx * 0.05}s`;
+        // Extract unique days within this phase
+        const uniqueDays = [...new Set(phaseMatches.map(m => m.date.split('T')[0]))];
 
-        // Date header
-        const header = document.createElement('div');
-        header.className = 'group-header';
-        header.innerHTML = `
-            <div class="group-label" style="font-size: 18px; margin-bottom: 4px;">📅 ${formattedDate}</div>
-        `;
-        section.appendChild(header);
+        // Build match groups by day
+        uniqueDays.forEach((dayStr, dateIdx) => {
+            const dateMatches = phaseMatches.filter(m => m.date.startsWith(dayStr));
+            const formattedDate = formatDate(dayStr);
 
-        // Matches container
-        const matchesDiv = document.createElement('div');
-        matchesDiv.className = 'group-matches';
+            const section = document.createElement('div');
+            section.className = 'group-section';
+            section.style.animationDelay = `${dateIdx * 0.05}s`;
 
-        dateMatches.forEach(m => {
-            const row = document.createElement('div');
-            row.className = 'match-row';
-            row.id = `match-${m.id}`;
-
-            const locked = isMatchLocked(m);
-            const saved1 = predictions[m.id]?.s1 || '';
-            const saved2 = predictions[m.id]?.s2 || '';
-            const isFilled = saved1 !== '' && saved2 !== '';
-            
-            const matchTime = formatTime(m.date);
-
-            const validated = predictions[m.id]?.validated === true;
-
-            if (isFilled) row.classList.add('filled');
-            if (locked) row.classList.add('locked');
-            if (validated) row.classList.add('validated');
-
-            row.innerHTML = `
-                <div class="match-time-side" style="display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.2; padding:4px 2px;">
-                    <span style="font-size: 9px; opacity: 0.7; font-weight: 600;">N°${m.id}</span>
-                    <span style="font-size: 11px; font-weight: 800; margin-top: 1px;">${matchTime}</span>
-                </div>
-                <div class="team team-left">
-                    <span class="team-name">${m.t1} <span class="team-group">(Gr. ${m.group})</span></span>
-                </div>
-                ${locked
-                    ? `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); font-weight:800; font-size:13px; letter-spacing:0.5px;">
-                           <span title="Match déjà joué" style="font-size:14px;">🔒</span>
-                           <span>${saved1 !== '' ? `${saved1} - ${saved2}` : 'Terminé'}</span>
-                           <span style="font-size:14px;">🔒</span>
-                       </div>`
-                    : validated
-                    ? `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--success); font-weight:900; font-size:15px; letter-spacing:1px;">
-                           <span style="font-size:14px;">✅</span>
-                           <span>${saved1} - ${saved2}</span>
-                           <span style="font-size:14px;">✅</span>
-                       </div>`
-                    : `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
-                           class="score-input ${saved1 !== '' ? 'has-value' : ''}"
-                           data-match="${m.id}" data-pos="1"
-                           value="${saved1}"
-                           placeholder="–">
-                       <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                           <span class="match-dash">-</span>
-                       </div>
-                       <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
-                           class="score-input ${saved2 !== '' ? 'has-value' : ''}"
-                           data-match="${m.id}" data-pos="2"
-                           value="${saved2}"
-                           placeholder="–">`
-                }
-                <div class="team team-right">
-                    <span class="team-name"><span class="team-group">(Gr. ${m.group})</span> ${m.t2}</span>
-                </div>
-                ${locked || validated
-                    ? `<div style="width:32px;"></div>`
-                    : `<button class="match-validate-btn" id="btn-val-${m.id}" onclick="validateSingleMatch(${m.id})" ${isFilled ? '' : 'disabled'}>
-                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                       </button>`
-                }
+            // Date header
+            const header = document.createElement('div');
+            header.className = 'group-header';
+            header.innerHTML = `
+                <div class="group-label" style="font-size: 18px; margin-bottom: 4px;">📅 ${formattedDate}</div>
             `;
+            section.appendChild(header);
 
-            matchesDiv.appendChild(row);
+            // Matches container
+            const matchesDiv = document.createElement('div');
+            matchesDiv.className = 'group-matches';
+
+            dateMatches.forEach(m => {
+                const row = document.createElement('div');
+                row.className = 'match-row';
+                row.id = `match-${m.id}`;
+
+                const isTbd = m.t1 === 'À définir' || m.t2 === 'À définir';
+                const locked = isMatchLocked(m) || isTbd; // Force lock if TBD
+                const saved1 = predictions[m.id]?.s1 || '';
+                const saved2 = predictions[m.id]?.s2 || '';
+                const isFilled = saved1 !== '' && saved2 !== '';
+                
+                const matchTime = formatTime(m.date);
+
+                const validated = predictions[m.id]?.validated === true;
+
+                if (isFilled) row.classList.add('filled');
+                if (locked) row.classList.add('locked');
+                if (validated) row.classList.add('validated');
+                if (isTbd) row.classList.add('tbd');
+
+                const displayGroup = m.phase === 'Poules' ? `(Gr. ${m.group})` : '';
+
+                let inputsHtml = '';
+                if (isTbd) {
+                    inputsHtml = `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); font-weight:800; font-size:12px; letter-spacing:0.5px;">
+                                   <span style="font-size:14px;">⏳</span>
+                                   <span>En attente</span>
+                                   <span style="font-size:14px;">⏳</span>
+                               </div>`;
+                } else if (locked) {
+                    inputsHtml = `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-dim); font-weight:800; font-size:13px; letter-spacing:0.5px;">
+                                   <span title="Match déjà joué" style="font-size:14px;">🔒</span>
+                                   <span>${saved1 !== '' ? `${saved1} - ${saved2}` : 'Terminé'}</span>
+                                   <span style="font-size:14px;">🔒</span>
+                               </div>`;
+                } else if (validated) {
+                    inputsHtml = `<div style="grid-column: 3 / 6; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--success); font-weight:900; font-size:15px; letter-spacing:1px;">
+                                   <span style="font-size:14px;">✅</span>
+                                   <span>${saved1} - ${saved2}</span>
+                                   <span style="font-size:14px;">✅</span>
+                               </div>`;
+                } else {
+                    inputsHtml = `<input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
+                                   class="score-input ${saved1 !== '' ? 'has-value' : ''}"
+                                   data-match="${m.id}" data-pos="1"
+                                   value="${saved1}"
+                                   placeholder="–">
+                               <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                   <span class="match-dash">-</span>
+                               </div>
+                               <input type="text" inputmode="numeric" maxlength="2" pattern="[0-9]*"
+                                   class="score-input ${saved2 !== '' ? 'has-value' : ''}"
+                                   data-match="${m.id}" data-pos="2"
+                                   value="${saved2}"
+                                   placeholder="–">`;
+                }
+
+                row.innerHTML = `
+                    <div class="match-time-side" style="display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.2; padding:4px 2px;">
+                        <span style="font-size: 9px; opacity: 0.7; font-weight: 600;">N°${m.id}</span>
+                        <span style="font-size: 11px; font-weight: 800; margin-top: 1px;">${matchTime}</span>
+                    </div>
+                    <div class="team team-left">
+                        <span class="team-name">${m.t1} <span class="team-group">${displayGroup}</span></span>
+                    </div>
+                    ${inputsHtml}
+                    <div class="team team-right">
+                        <span class="team-name"><span class="team-group">${displayGroup}</span> ${m.t2}</span>
+                    </div>
+                    ${locked || validated || isTbd
+                        ? `<div style="width:32px;"></div>`
+                        : `<button class="match-validate-btn" id="btn-val-${m.id}" onclick="validateSingleMatch(${m.id})" ${isFilled ? '' : 'disabled'}>
+                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                           </button>`
+                    }
+                `;
+
+                matchesDiv.appendChild(row);
+            });
+
+            section.appendChild(matchesDiv);
+            phaseSection.appendChild(section);
         });
 
-        section.appendChild(matchesDiv);
-        content.appendChild(section);
+        content.appendChild(phaseSection);
     });
 
     // Attach input listeners
@@ -515,7 +585,7 @@ async function validateSingleMatch(matchId) {
         await db.ref(`pronos/${currentPlayer}/matches/${matchId}`).set({
             equipe1: match.t1,
             equipe2: match.t2,
-            groupe: match.group,
+            phase: match.phase,
             s1: s1,
             s2: s2,
             date: match.date,
@@ -558,4 +628,29 @@ function updateThemeToggleIcons() {
     document.querySelectorAll('.theme-toggle').forEach(btn => {
         btn.innerHTML = isLight ? moonIcon : sunIcon;
     });
+}
+
+// ============================================
+// PHASE NAVIGATION
+// ============================================
+function scrollToPhase(phaseIdText) {
+    const section = document.getElementById(`phase-${phaseIdText}`);
+    if (section) {
+        // Adjust for sticky header height
+        const headerOffset = document.getElementById('pronos-header').offsetHeight + 10;
+        const elementPosition = section.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+  
+        window.scrollTo({
+             top: offsetPosition,
+             behavior: "smooth"
+        });
+
+        // Update active nav button
+        document.querySelectorAll('.phase-nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.querySelector(`.phase-nav-btn[onclick="scrollToPhase('${phaseIdText}')"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
 }
