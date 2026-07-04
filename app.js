@@ -103,7 +103,15 @@ const KNOCKOUT_MATCHES = [
     { id: 85, phase: "16èmes", t1: "Suisse", t2: "Algérie", date: "2026-07-03T05:00" },
     { id: 86, phase: "16èmes", t1: "Australie", t2: "Egypte", date: "2026-07-03T20:00" },
     { id: 87, phase: "16èmes", t1: "Argentine", t2: "Cap-Vert", date: "2026-07-04T00:00" },
-    { id: 88, phase: "16èmes", t1: "Colombie", t2: "Ghana", date: "2026-07-04T03:30" }
+    { id: 88, phase: "16èmes", t1: "Colombie", t2: "Ghana", date: "2026-07-04T03:30" },
+    { id: 89, phase: "8èmes", t1: "Canada", t2: "Maroc", date: "2026-07-04T19:00" },
+    { id: 90, phase: "8èmes", t1: "Paraguay", t2: "France", date: "2026-07-04T23:00" },
+    { id: 91, phase: "8èmes", t1: "Brésil", t2: "Norvège", date: "2026-07-05T22:00" },
+    { id: 92, phase: "8èmes", t1: "Mexique", t2: "Angleterre", date: "2026-07-06T02:00" },
+    { id: 93, phase: "8èmes", t1: "Portugal", t2: "Espagne", date: "2026-07-06T21:00" },
+    { id: 94, phase: "8èmes", t1: "Etats-Unis", t2: "Belgique", date: "2026-07-07T02:00" },
+    { id: 95, phase: "8èmes", t1: "Argentine", t2: "Egypte", date: "2026-07-07T18:00" },
+    { id: 96, phase: "8èmes", t1: "Suisse", t2: "À définir", date: "2026-07-07T22:00" }
 ];
 
 // ============================================
