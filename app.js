@@ -226,16 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Check if already submitted
-    if (localStorage.getItem('wcpronos_submitted') === 'true') {
-        currentPlayer = localStorage.getItem('wcpronos_name') || '';
-        document.getElementById('done-message').textContent =
-            currentPlayer
-                ? `Les pronos de ${currentPlayer} ont bien été envoyés.`
-                : 'Tes pronostics ont bien été envoyés.';
-        showScreen('screen-done');
-        return;
-    }
+
 
     // Check if there's saved progress
     const savedName = localStorage.getItem('wcpronos_name');
