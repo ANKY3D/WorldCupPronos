@@ -111,7 +111,7 @@ const KNOCKOUT_MATCHES = [
     { id: 93, phase: "8èmes", t1: "Portugal", t2: "Espagne", date: "2026-07-06T21:00" },
     { id: 94, phase: "8èmes", t1: "Etats-Unis", t2: "Belgique", date: "2026-07-07T02:00" },
     { id: 95, phase: "8èmes", t1: "Argentine", t2: "Egypte", date: "2026-07-07T18:00" },
-    { id: 96, phase: "8èmes", t1: "Suisse", t2: "À définir", date: "2026-07-07T22:00" }
+    { id: 96, phase: "8èmes", t1: "Suisse", t2: "Colombie", date: "2026-07-07T22:00" }
 ];
 
 // ============================================
