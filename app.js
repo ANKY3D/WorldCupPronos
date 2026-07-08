@@ -111,7 +111,11 @@ const KNOCKOUT_MATCHES = [
     { id: 93, phase: "8èmes", t1: "Portugal", t2: "Espagne", date: "2026-07-06T21:00" },
     { id: 94, phase: "8èmes", t1: "Etats-Unis", t2: "Belgique", date: "2026-07-07T02:00" },
     { id: 95, phase: "8èmes", t1: "Argentine", t2: "Egypte", date: "2026-07-07T18:00" },
-    { id: 96, phase: "8èmes", t1: "Suisse", t2: "Colombie", date: "2026-07-07T22:00" }
+    { id: 96, phase: "8èmes", t1: "Suisse", t2: "Colombie", date: "2026-07-07T22:00" },
+    { id: 97, phase: "Quarts", t1: "France", t2: "Maroc", date: "2026-07-09T22:00" },
+    { id: 98, phase: "Quarts", t1: "Espagne", t2: "Belgique", date: "2026-07-10T21:00" },
+    { id: 99, phase: "Quarts", t1: "Norvège", t2: "Angleterre", date: "2026-07-11T23:00" },
+    { id: 100, phase: "Quarts", t1: "Argentine", t2: "Suisse", date: "2026-07-12T03:00" }
 ];
 
 // ============================================
