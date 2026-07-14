@@ -115,7 +115,9 @@ const KNOCKOUT_MATCHES = [
     { id: 97, phase: "Quarts", t1: "France", t2: "Maroc", date: "2026-07-09T22:00" },
     { id: 98, phase: "Quarts", t1: "Espagne", t2: "Belgique", date: "2026-07-10T21:00" },
     { id: 99, phase: "Quarts", t1: "Norvège", t2: "Angleterre", date: "2026-07-11T23:00" },
-    { id: 100, phase: "Quarts", t1: "Argentine", t2: "Suisse", date: "2026-07-12T03:00" }
+    { id: 100, phase: "Quarts", t1: "Argentine", t2: "Suisse", date: "2026-07-12T03:00" },
+    { id: 101, phase: "Demis", t1: "France", t2: "Espagne", date: "2026-07-14T21:00" },
+    { id: 102, phase: "Demis", t1: "Angleterre", t2: "Argentine", date: "2026-07-15T21:00" }
 ];
 
 // ============================================
